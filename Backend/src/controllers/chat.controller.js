@@ -3,48 +3,152 @@ import chatModel from "../models/chat.model.js";
 import messageModel from "../models/message.model.js";
 
 export async function sendMessage(req, res) {
-  const { message ,chat: chatId } = req.body;
+  const { message, chat: chatId } = req.body;
 
-  let title = null, chat = null;
+  let title = null;
+  let chat = null;
+  let currentChatId = chatId;
 
-    if (!chatId) {
-        title = await generateChatTitle(message);
-        chat = await chatModel.create({
-            user: req.user.id,
-            title
-        })
-    }
+  if (!currentChatId) {
+    title = await generateChatTitle(message);
+    chat = await chatModel.create({
+      user: req.user.id,
+      title,
+    });
+    currentChatId = chat.id;
+  }
 
-  const userMessage = await messageModel.create({
-    chat: chat.id,
+  await messageModel.create({
+    chat: currentChatId,
     content: message,
     role: "user",
   });
 
-//    const messages = await messageModel.find({ chat: chatId })
+  const messages = await messageModel.find({ chat: currentChatId });
+
+  const result = await generateResponse(messages);
 
   const aiMessage = await messageModel.create({
-    chat: chat.id,
+    chat: currentChatId,
     content: result,
     role: "ai",
   });
 
   res.status(201).json({
-    aiMessage: result,
     title,
     chat,
     aiMessage,
   });
 }
 
-// export async function getChats(req, res){
+export async function getChats(req, res) {
+  const user = req.user;
+  const chats = await chatModel.find({ user: user.id });
+  res.status(200).json({
+    message: "Chats retrieved successfully",
+    chats,
+  });
+}
 
-// }
+export async function getMessages(req, res) {
+  const { chatId } = req.params;
 
-// export async function getMessages(req, res) {
+  const chat = await chatModel.findOne({
+    _id: chatId,
+    user: req.user.id,
+  });
 
-// }
+  if (!chat) {
+    return res.status(404).json({
+      message: "Chat not found",
+    });
+  }
 
-// export async function deleteChat(req, res) {
+  const messages = await messageModel.find({
+    chat: chatId,
+  });
 
-// }
+  res.status(200).json({
+    message: "Messages retrieved successfully",
+    messages,
+  });
+}
+
+export async function updateMessage(req, res) {
+  try {
+    const { messageId } = req.params;
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: "Content is required",
+      });
+    }
+
+    const message = await messageModel.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    message.content = content;
+    await message.save();
+
+    await messageModel.deleteMany({
+      chat: message.chat,
+      role: "ai",
+      createdAt: { $gt: message.createdAt },
+    });
+
+    const messages = await messageModel.find({ chat: message.chat })
+
+    const aiText = await generateResponse(messages);
+
+    const newAIMessage = await messageModel.create({
+      chat: message.chat,
+      content: aiText,
+      role: "ai",
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        updatedMessage: message,
+        aiMessage: newAIMessage,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+}
+
+export async function deleteChat(req, res) {
+  const { chatId } = req.params;
+
+  const chat = await chatModel.findOneAndDelete({
+    _id: chatId,
+    user: req.user.id,
+  });
+
+  await messageModel.deleteMany({
+    chat: chatId,
+  });
+
+  if (!chat) {
+    return res.status(404).json({
+      message: "Chat not found",
+    });
+  }
+
+  res.status(200).json({
+    message: "Chat deleted successfully",
+  });
+}
