@@ -16,6 +16,8 @@ export async function sendMessage(req, res) {
       title,
     });
     currentChatId = chat.id;
+  } else {
+    chat = await chatModel.findById(currentChatId);
   }
 
   await messageModel.create({
