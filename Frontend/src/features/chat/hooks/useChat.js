@@ -1,13 +1,13 @@
 import { initializedSocketConnection } from "../service/chat.socket";
 import { sendMessage, getChats, getMessages, deleteChat, updateMessage } from "../service/chat.api";
-import {setChats,setCurrentChatId,setLoading,setError,createNewChat,addNewMessage,addMessages,setMessages,deleteChat as deleteChatAction, } from "../chat.slice";
+import { setChats, setCurrentChatId, setLoading, setError, createNewChat, addNewMessage, addMessages, setMessages, deleteChat as deleteChatAction, } from "../chat.slice";
 import { useDispatch, useSelector } from "react-redux";
 
 export const useChat = () => {
     const dispatch = useDispatch()
     const chats = useSelector((state) => state.chat.chats)
 
-    // ── Send Message ─────────────────────────────
+    // ── Send Message ──
     async function handleSendMessage({ message, chatId }) {
         dispatch(setLoading(true))
 
@@ -44,14 +44,16 @@ export const useChat = () => {
             }))
 
             dispatch(setCurrentChatId(chat._id))
+            return chat._id
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Something went wrong"))
+            return null
         } finally {
             dispatch(setLoading(false))
         }
     }
 
-    // ── Get All Chats (sidebar) ───────────────────
+    // ── Get All Chats (sidebar) ──
     async function handleGetChats() {
         dispatch(setLoading(true))
         try {
@@ -73,7 +75,7 @@ export const useChat = () => {
         }
     }
 
-    // ── Open Chat (load messages) ─────────────────
+    // ── Open Chat (load messages) ──
     async function handleOpenChat(chatId) {
         if (chats[chatId]?.messages?.length > 0) {
             dispatch(setCurrentChatId(chatId))
@@ -98,24 +100,30 @@ export const useChat = () => {
         }
     }
 
-    // ── Delete Chat ───────────────────────────────
+    // ── Delete Chat ──
     async function handleDeleteChat(chatId) {
         try {
             await deleteChat(chatId)
-            dispatch(deleteChatAction(chatId))  
+            dispatch(deleteChatAction(chatId))
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Failed to delete chat"))
         }
     }
 
-    // ── Update Message ────────────────────────────
+    // ── Update Message ──
     async function handleUpdateMessage(messageId, newContent, chatId) {
         dispatch(setLoading(true))
         try {
             await updateMessage(messageId, newContent)
-            // Refresh chat history because editing a message might delete subsequent messages on backend
             const data = await getMessages(chatId)
-            dispatch(setMessages({ chatId, messages: data.messages }))
+            dispatch(setMessages({
+                chatId,
+                messages: data.messages.map(msg => ({
+                    id: msg._id,
+                    content: msg.content,
+                    role: msg.role,
+                })),
+            }))
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Failed to update message"))
         } finally {
@@ -123,7 +131,7 @@ export const useChat = () => {
         }
     }
 
-    // ── New Chat (reset current) ──────────────────
+    // ── New Chat (reset current) ──
     function handleNewChat() {
         dispatch(setCurrentChatId(null))
     }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register ,verifyEmail ,login ,getMe} from "../controllers/auth.controller.js";
+import { register, verifyEmail, login, getMe, updateProfile, changePassword } from "../controllers/auth.controller.js";
 import {registerValidator ,loginValidator} from "../validator/auth.validator.js";
 import { authUser } from "../middlewares/auth.middleware.js";
 
@@ -39,5 +39,19 @@ authRouter.get('/get-me', authUser, getMe)
  * @query { token }
  */
 authRouter.get('/verify-email', verifyEmail)
+
+/**
+ * @route PATCH /api/auth/update-profile
+ * @desc Update username / email
+ * @access Private
+ */
+authRouter.patch('/update-profile', authUser, updateProfile)
+
+/**
+ * @route PATCH /api/auth/change-password
+ * @desc Change password
+ * @access Private
+ */
+authRouter.patch('/change-password', authUser, changePassword)
 
 export default authRouter;

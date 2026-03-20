@@ -26,3 +26,13 @@ export async function getMe() {
   const response = await api.get("/api/auth/get-me")
   return response.data;
 }
+
+export async function updateProfile({ username, email }) {
+  const response = await api.patch("/api/auth/update-profile", { username, email });
+  return response.data;
+}
+
+export async function changePassword({ currentPassword, newPassword }) {
+  const response = await api.patch("/api/auth/change-password", { currentPassword, newPassword });
+  return response.data;
+}

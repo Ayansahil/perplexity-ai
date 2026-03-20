@@ -1,6 +1,9 @@
 import userModel from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mail.service.js";
+
+
 
 /**
  * @desc Register a new user
@@ -112,6 +115,7 @@ export async function login(req, res) {
       email: user.email,
     },
   });
+  console.log(req.body);
 }
 
 /**
@@ -178,5 +182,79 @@ export async function verifyEmail(req, res) {
       success: false,
       err: err.message,
     });
+  }
+}
+
+/**
+ * @desc Update user profile (username / email)
+ * @route PATCH /api/auth/update-profile
+ * @access Private
+ * @body { username?, email? }
+ */
+export async function updateProfile(req, res) {
+  try {
+    const { username, email } = req.body;
+    const userId = req.user.id;
+
+    if (!username && !email) {
+      return res.status(400).json({ success: false, message: "Nothing to update" });
+    }
+
+    // Check uniqueness against other users
+    const conflictQuery = [];
+    if (username) conflictQuery.push({ username });
+    if (email) conflictQuery.push({ email });
+    const conflict = await userModel.findOne({ $or: conflictQuery, _id: { $ne: userId } });
+    if (conflict) {
+      return res.status(400).json({ success: false, message: "Username or email already taken" });
+    }
+
+    const update = {};
+    if (username) update.username = username.trim();
+    if (email) update.email = email.toLowerCase().trim();
+
+    const updated = await userModel
+      .findByIdAndUpdate(userId, { $set: update }, { new: true })
+      .select("-password");
+
+    res.status(200).json({ success: true, message: "Profile updated", user: updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+/**
+ * @desc Change password for authenticated user
+ * @route PATCH /api/auth/change-password
+ * @access Private
+ * @body { currentPassword, newPassword }
+ */
+export async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: "Both passwords are required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "New password must be at least 6 characters" });
+    }
+
+    const user = await userModel.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Current password is incorrect" });
+    }
+
+    user.password = newPassword; 
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 }
