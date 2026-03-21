@@ -9,13 +9,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const user = useSelector((state) => state.auth.user);
-  const loading = useSelector((state) => state.auth.loading);
-
   const { handleLogin } = useAuth();
-
   const navigate = useNavigate();
+  const { user, loading } = useSelector((state) => state.auth);
 
   const submitForm = async (event) => {
     event.preventDefault();
@@ -41,7 +37,7 @@ const Login = () => {
         <div className="w-full max-w-md rounded-2xl border border-[#9FFE9A]/40 bg-zinc-900/70 p-8 shadow-2xl shadow-black/50 backdrop-blur">
           <h1 className="text-3xl font-bold text-[#9FFE9A]">Welcome Back</h1>
           <p className="mt-2 text-sm text-zinc-300">
-            Sign in with your email and password.
+            Log in to access your account.
           </p>
 
           <form onSubmit={submitForm} className="mt-8 space-y-5">
@@ -96,14 +92,14 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-[#9FFE9A] px-4 py-3 font-semibold text-zinc-950 transition hover:bg-[#acfebb] focus:outline-none focus:shadow-[0_0_0_3px_rgba(159,254,154,0.35)]"
+              className="w-full rounded-lg bg-[#9FFE9A] px-4 py-3 font-semibold text-zinc-950 transition hover:bg-[#acfebb] focus:outline-none focus:shadow-[0_0_0_3px_rgba(159,254,154,0.35)] disabled:opacity-50"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-zinc-300">
-            Don&apos;t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/register"
               className="font-semibold text-[#9FFE9A] transition hover:text-[#acfebb]"

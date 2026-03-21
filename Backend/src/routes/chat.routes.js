@@ -1,13 +1,14 @@
 import { Router } from "express";
 import {sendMessage,getChats,getMessages,updateMessage,deleteChat} from "../controllers/chat.controller.js";
 import { authUser } from "../middlewares/auth.middleware.js";
+import { aiModelLimiter } from "../middlewares/rateLimit.middleware.js";
 
 
 const chatRouter = Router();
 
 
 
-chatRouter.post("/message",authUser,sendMessage)
+chatRouter.post("/message", authUser, aiModelLimiter, sendMessage)
 
 chatRouter.get("/", authUser, getChats)
 

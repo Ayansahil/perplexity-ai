@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { register, verifyEmail, login, getMe, updateProfile, changePassword } from "../controllers/auth.controller.js";
+import { register, verifyEmail, login, getMe, updateProfile, changePassword, logout } from "../controllers/auth.controller.js";
 import {registerValidator ,loginValidator} from "../validator/auth.validator.js";
 import { authUser } from "../middlewares/auth.middleware.js";
+import { authLimiter } from "../middlewares/rateLimit.middleware.js";
 
 const authRouter = Router();
 
@@ -12,7 +13,7 @@ const authRouter = Router();
  * @access Public
  * @body { username, email, password }
  */
-authRouter.post("/register",registerValidator,register)
+authRouter.post("/register", authLimiter, registerValidator, register)
 
 
 /**
@@ -21,7 +22,7 @@ authRouter.post("/register",registerValidator,register)
  * @access Public
  * @body { email, password }
  */
-authRouter.post("/login", loginValidator, login)
+authRouter.post("/login", authLimiter, loginValidator, login)
 
 
 /**
@@ -53,5 +54,12 @@ authRouter.patch('/update-profile', authUser, updateProfile)
  * @access Private
  */
 authRouter.patch('/change-password', authUser, changePassword)
+
+/**
+ * @route POST /api/auth/logout
+ * @desc Logout user
+ * @access Private
+ */
+authRouter.post('/logout', authUser, logout)
 
 export default authRouter;

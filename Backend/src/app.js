@@ -5,6 +5,7 @@ import authRouter from "./routes/auth.routes.js";
 import chatRouter from "./routes/chat.routes.js";
 import helmet from "helmet";
 import morgan from "morgan";
+import { apiLimiter } from "./middlewares/rateLimit.middleware.js";
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.use(
     methods: ["GET", "POST", "PUT","PATCH","DELETE"],
   }),
 );
+
+// Apply global rate limiting to all requests
+app.use(apiLimiter);
 
 // Health Check Route
 app.get("/health", (req, res) => {

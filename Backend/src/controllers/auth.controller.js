@@ -258,3 +258,18 @@ export async function changePassword(req, res) {
     res.status(500).json({ success: false, message: "Server error" });
   }
 }
+
+/**
+ * @desc Logout user
+ * @route POST /api/auth/logout
+ * @access Private
+ */
+export async function logout(req, res) {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+}

@@ -126,9 +126,7 @@ export const MessageBubble = ({ id, role, content, onEdit }) => {
   )
 }
 
-// ─────────────────────────────────────────────
 // ChatInput — shared search bar with Pro Search toggle
-// ─────────────────────────────────────────────
 export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeholder = 'Ask anything...' }) => {
   const [proSearch, setProSearch] = useState(false)
 
@@ -175,7 +173,7 @@ export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeho
                     }`}
                   >
                     <Icon name={proSearch ? 'stars' : 'public'} fill={proSearch} className="text-sm" />
-                    Pro Search
+                    <span className="hidden min-[412px]:inline">Pro Search</span>
                     {proSearch && (
                       <span className="ml-0.5 w-1.5 h-1.5 rounded-full bg-[#9ffe9a] animate-pulse" />
                     )}

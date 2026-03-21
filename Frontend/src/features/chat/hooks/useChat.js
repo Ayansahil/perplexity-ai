@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 export const useChat = () => {
     const dispatch = useDispatch()
     const chats = useSelector((state) => state.chat.chats)
+    const currentChatId = useSelector((state) => state.chat.currentChatId)
 
     // ── Send Message ──
     async function handleSendMessage({ message, chatId }) {
@@ -112,12 +113,15 @@ export const useChat = () => {
 
     // ── Update Message ──
     async function handleUpdateMessage(messageId, newContent, chatId) {
+        const targetChatId = chatId || currentChatId
+
         dispatch(setLoading(true))
         try {
             await updateMessage(messageId, newContent)
-            const data = await getMessages(chatId)
+            if (!targetChatId) return
+            const data = await getMessages(targetChatId)
             dispatch(setMessages({
-                chatId,
+                chatId: targetChatId,
                 messages: data.messages.map(msg => ({
                     id: msg._id,
                     content: msg.content,

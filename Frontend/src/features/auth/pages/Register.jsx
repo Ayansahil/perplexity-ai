@@ -1,12 +1,21 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router'
+import React, { useState } from "react";
+import { Link, useNavigate, Navigate } from "react-router";
+import { useAuth } from "../hooks/useAuth";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { Icon } from "../../chat/components";
 
 const Register = () => {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const submitForm = (event) => {
+  const { handleRegister } = useAuth();
+  const navigate = useNavigate()
+  const { user, loading } = useSelector((state) => state.auth)
+
+  const submitForm = async (event) => {
     event.preventDefault()
 
     const payload = {
@@ -14,8 +23,18 @@ const Register = () => {
       email,
       password,
     }
+    try {
+      await handleRegister(payload);
+      toast.success("Registration successful! Please check your email to verify account.");
+      navigate("/login");
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Registration failed. Please try again.";
+      toast.error(errorMessage);
+    }
+  }
 
-    console.log('Register payload:', payload)
+  if (!loading && user) {
+    return <Navigate to="/" replace />
   }
 
   return (
@@ -64,15 +83,24 @@ const Register = () => {
               <label htmlFor="password" className="mb-2 block text-sm font-medium text-zinc-200">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Create a password"
-                required
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950/80 px-4 py-3 text-zinc-100 outline-none ring-0 transition focus:border-[#9FFE9A] focus:shadow-[0_0_0_3px_rgba(159,254,154,0.25)]"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Create a password"
+                  required
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-950/80 px-4 py-3 text-zinc-100 outline-none ring-0 transition focus:border-[#9FFE9A] focus:shadow-[0_0_0_3px_rgba(159,254,154,0.25)] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-200"
+                >
+                  <Icon name={showPassword ? 'visibility_off' : 'visibility'} className="text-lg" />
+                </button>
+              </div>
             </div>
 
             <button
