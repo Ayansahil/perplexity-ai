@@ -2,7 +2,9 @@
 
 A production-ready MERN stack application that replicates the Perplexity AI experience, featuring real-time AI responses, chat history, and authenticated user profiles.
 
-![Screenshot Placeholder](https://via.placeholder.com/1200x600?text=Perplexity+Clone+Dashboard)
+🔗 **Live Demo:** [perplexity-ai-chi.vercel.app](https://perplexity-ai-chi.vercel.app)
+
+![Dashboard](https://github.com/user-attachments/assets/8cc2b2c5-6f14-4872-91c3-60bb31e6128f)
 
 ## 🚀 Features
 
