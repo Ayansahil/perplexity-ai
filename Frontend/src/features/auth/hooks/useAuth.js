@@ -20,9 +20,16 @@ export function useAuth() {
     try {
       dispatch(setLoading(true));
       const data = await login({ email, password });
+
+      if (!data?.user) {
+        throw new Error(data?.message || "Invalid credentials or user not found");
+      }
+
       dispatch(setUser(data.user));
     } catch (err) {
-      dispatch(setError(err.response?.data?.message || "Login failed"));
+      const message = err.response?.data?.message || err.message || "Login failed";
+      dispatch(setError(message));
+      throw err; // Re-throw to trigger catch block in component
     } finally {
       dispatch(setLoading(false));
     }

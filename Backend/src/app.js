@@ -6,6 +6,7 @@ import chatRouter from "./routes/chat.routes.js";
 import helmet from "helmet";
 import morgan from "morgan";
 import { apiLimiter } from "./middlewares/rateLimit.middleware.js";
+import { errorMiddleware, notFoundHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -34,5 +35,11 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/chats", chatRouter);
+
+// Undefined Route Handler (404)
+app.use(notFoundHandler);
+
+// Global Error Handler 
+app.use(errorMiddleware);
 
 export default app;

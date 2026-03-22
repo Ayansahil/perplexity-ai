@@ -46,6 +46,6 @@ export async function sendEmail({ to, subject, html, text }) {
 
   } catch (err) {
     console.error("❌ Error sending email:", err.message);
-    throw err; // register me catch kar lenge
+    throw err;
   }
 }
