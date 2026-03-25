@@ -3,8 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mail.service.js";
 
-
-
 /**
  * @desc Register a new user
  * @route POST /api/auth/register
@@ -35,10 +33,10 @@ export async function register(req, res) {
     process.env.JWT_SECRET,
   );
 
- await sendEmail({
-  to: email,
-  subject: "Welcome to Perplexity!",
-  html: `
+  await sendEmail({
+    to: email,
+    subject: "Welcome to Perplexity!",
+    html: `
     <p>Hi ${username},</p>
     <p>Thank you for registering at <strong>Perplexity</strong>. We're excited to have you on board!</p>
     <p>Please verify your email address by clicking the link below:</p>
@@ -46,7 +44,7 @@ export async function register(req, res) {
     <p>If you did not create an account, please ignore this email.</p>
     <p>Best regards,<br>The Perplexity Team</p>
   `,
-});
+  });
 
   res.status(201).json({
     message: "User registered successfully",
@@ -105,21 +103,21 @@ export async function login(req, res) {
   );
 
   res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-});
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
 
-res.status(200).json({
-  message: "Login successful",
-  success: true,
-  user: {
-    id: user._id,
-    username: user.username,
-    email: user.email,
-  },
-});
-console.log(req.body);
+  res.status(200).json({
+    message: "Login successful",
+    success: true,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    },
+  });
+  console.log(req.body);
 }
 
 /**
@@ -201,16 +199,23 @@ export async function updateProfile(req, res) {
     const userId = req.user.id;
 
     if (!username && !email) {
-      return res.status(400).json({ success: false, message: "Nothing to update" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Nothing to update" });
     }
 
     // Check uniqueness against other users
     const conflictQuery = [];
     if (username) conflictQuery.push({ username });
     if (email) conflictQuery.push({ email });
-    const conflict = await userModel.findOne({ $or: conflictQuery, _id: { $ne: userId } });
+    const conflict = await userModel.findOne({
+      $or: conflictQuery,
+      _id: { $ne: userId },
+    });
     if (conflict) {
-      return res.status(400).json({ success: false, message: "Username or email already taken" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Username or email already taken" });
     }
 
     const update = {};
@@ -221,7 +226,9 @@ export async function updateProfile(req, res) {
       .findByIdAndUpdate(userId, { $set: update }, { new: true })
       .select("-password");
 
-    res.status(200).json({ success: true, message: "Profile updated", user: updated });
+    res
+      .status(200)
+      .json({ success: true, message: "Profile updated", user: updated });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -239,24 +246,38 @@ export async function changePassword(req, res) {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ success: false, message: "Both passwords are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Both passwords are required" });
     }
     if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: "New password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "New password must be at least 6 characters",
+        });
     }
 
     const user = await userModel.findById(req.user.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Current password is incorrect" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Current password is incorrect" });
     }
 
-    user.password = newPassword; 
+    user.password = newPassword;
     await user.save();
 
-    res.status(200).json({ success: true, message: "Password changed successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Password changed successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
