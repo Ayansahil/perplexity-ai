@@ -3,9 +3,7 @@ import { useSelector } from 'react-redux'
 import { useAuth } from '../hooks/useAuth'
 import { Icon } from '../../chat/components'
 
-// ─────────────────────────────────────────────
 // Toast banner
-// ─────────────────────────────────────────────
 const Toast = ({ toast }) => {
   if (!toast) return null
   return (
@@ -20,9 +18,7 @@ const Toast = ({ toast }) => {
   )
 }
 
-// ─────────────────────────────────────────────
 // Section card wrapper
-// ─────────────────────────────────────────────
 const Card = ({ title, description, children }) => (
   <div className="bg-[#141414] border border-white/5 rounded-2xl p-6">
     <div className="mb-6">
@@ -33,9 +29,7 @@ const Card = ({ title, description, children }) => (
   </div>
 )
 
-// ─────────────────────────────────────────────
 // Input field
-// ─────────────────────────────────────────────
 const Field = ({ label, id, type = 'text', value, onChange, placeholder, autoComplete }) => (
   <div>
     <label htmlFor={id} className="block text-xs font-semibold text-[#adaaaa] uppercase tracking-wider mb-2">
@@ -53,9 +47,7 @@ const Field = ({ label, id, type = 'text', value, onChange, placeholder, autoCom
   </div>
 )
 
-// ─────────────────────────────────────────────
 // AccountPage — /account
-// ─────────────────────────────────────────────
 const AccountPage = () => {
   const { user } = useSelector((state) => state.auth)
   const { handleUpdateProfile, handleChangePassword } = useAuth()

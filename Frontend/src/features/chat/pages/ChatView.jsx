@@ -46,7 +46,7 @@ const ChatView = () => {
           {currentMessages.map((msg) => (
             <MessageBubble
               key={msg.id}
-              id={msg.id}
+              id={msg._id || msg.id}
               role={msg.role}
               content={msg.content}
               onEdit={msg.role === 'user' ? handleEditMessage : null}
