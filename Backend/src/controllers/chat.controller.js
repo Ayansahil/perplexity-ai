@@ -3,9 +3,12 @@ import chatModel from "../models/chat.model.js";
 import messageModel from "../models/message.model.js";
 
 export async function sendMessage(req, res) {
-  const { message, chat: chatId } = req.body;
+  
 
-  if (!message || typeof message !== "string" || message.trim() === "") {
+  const { message, content, chat: chatId } = req.body;
+  const finalContent = content || message;
+
+  if (!finalContent || typeof finalContent !== "string" || finalContent.trim() === "") {
     return res.status(400).json({
       success: false,
       message: "Message content is required",
@@ -24,7 +27,7 @@ export async function sendMessage(req, res) {
   let currentChatId = chatId;
 
   if (!currentChatId) {
-    title = await generateChatTitle(message);
+    title = await generateChatTitle(finalContent);
     chat = await chatModel.create({
       user: req.user.id,
       title,
@@ -42,7 +45,7 @@ export async function sendMessage(req, res) {
 
   await messageModel.create({
     chat: currentChatId,
-    content: message,
+    content: finalContent,
     role: "user",
   });
 
