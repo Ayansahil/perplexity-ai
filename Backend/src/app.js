@@ -10,20 +10,25 @@ import { errorMiddleware, notFoundHandler } from "./middlewares/error.middleware
 
 const app = express();
 
+// Trust proxy for secure cookies behind Render/Vercel proxies
+app.set("trust proxy", 1);
+
+// CORS should be near the top to handle preflight requests correctly
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, "") : "*",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 // Middleware
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT","PATCH","DELETE"],
-  }),
-);
 
 // Apply global rate limiting to all requests
 app.use(apiLimiter);

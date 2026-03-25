@@ -5,6 +5,20 @@ import messageModel from "../models/message.model.js";
 export async function sendMessage(req, res) {
   const { message, chat: chatId } = req.body;
 
+  if (!message || typeof message !== "string" || message.trim() === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Message content is required",
+    });
+  }
+
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+  }
+
   let title = null;
   let chat = null;
   let currentChatId = chatId;
@@ -18,6 +32,12 @@ export async function sendMessage(req, res) {
     currentChatId = chat.id;
   } else {
     chat = await chatModel.findById(currentChatId);
+    if (!chat) {
+       return res.status(404).json({
+         success: false,
+         message: "Chat not found",
+       });
+    }
   }
 
   await messageModel.create({
