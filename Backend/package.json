@@ -12,7 +12,9 @@
   "type": "module",
   "description": "",
   "dependencies": {
+    "@langchain/core": "^1.1.36",
     "@langchain/google-genai": "^2.1.26",
+    "@langchain/langgraph": "^1.2.5",
     "@langchain/mistralai": "^1.0.7",
     "@tavily/core": "^0.7.2",
     "bcryptjs": "^3.0.3",
@@ -24,7 +26,7 @@
     "express-validator": "^7.3.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "langchain": "^1.2.32",
+    "langchain": "^1.2.37",
     "mongoose": "^9.3.0",
     "morgan": "^1.10.1",
     "resend": "^6.9.4",
