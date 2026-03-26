@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 // Icon — Material Symbols wrapper
 export const Icon = ({ name, fill = false, className = '' }) => (
