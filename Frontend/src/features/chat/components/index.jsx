@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
-// ─────────────────────────────────────────────
 // Icon — Material Symbols wrapper
-// ─────────────────────────────────────────────
 export const Icon = ({ name, fill = false, className = '' }) => (
   <span
     className={`material-symbols-outlined select-none ${className}`}
@@ -13,9 +11,7 @@ export const Icon = ({ name, fill = false, className = '' }) => (
   </span>
 )
 
-// ─────────────────────────────────────────────
 // LoadingDots — animated thinking indicator
-// ─────────────────────────────────────────────
 export const LoadingDots = () => (
   <div className="flex gap-6 mb-8">
     <div className="w-10 h-10 rounded-full bg-[#9ffe9a]/10 flex-shrink-0 flex items-center justify-center border border-[#9ffe9a]/20">
@@ -36,9 +32,7 @@ export const LoadingDots = () => (
   </div>
 )
 
-// ─────────────────────────────────────────────
 // MessageBubble — user + AI messages
-// ─────────────────────────────────────────────
 export const MessageBubble = ({ id, role, content, onEdit }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(content)
