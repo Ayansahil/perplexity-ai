@@ -46,7 +46,7 @@ export async function generateResponse(messages) {
     ],
   });
 
-  return response.text;
+  return response.content;
 }
 
 export async function generateChatTitle(message) {
@@ -61,5 +61,5 @@ export async function generateChatTitle(message) {
             "${message}"
             `),
   ]);
-  return response.text;
+  return response.content;
 }

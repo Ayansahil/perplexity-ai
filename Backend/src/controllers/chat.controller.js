@@ -53,6 +53,13 @@ export async function sendMessage(req, res) {
 
   const result = await generateResponse(messages);
 
+  if (!result) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate AI response",
+    });
+  }
+
   const aiMessage = await messageModel.create({
     chat: currentChatId,
     content: result,
