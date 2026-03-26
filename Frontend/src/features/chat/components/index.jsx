@@ -97,20 +97,27 @@ export const MessageBubble = ({ id, role, content, onEdit }) => {
       </div>
       <div className="flex-1 text-[#e0e0e0] leading-relaxed">
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
-            p:    ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-            ul:   ({ children }) => <ul className="mb-3 list-disc pl-5 space-y-1">{children}</ul>,
-            ol:   ({ children }) => <ol className="mb-3 list-decimal pl-5 space-y-1">{children}</ol>,
-            li:   ({ children }) => <li className="text-[#e0e0e0]">{children}</li>,
-            h1:   ({ children }) => <h1 className="text-xl font-bold text-white mb-2">{children}</h1>,
-            h2:   ({ children }) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
-            h3:   ({ children }) => <h3 className="font-semibold text-white mb-1">{children}</h3>,
+            p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+            ul: ({ children }) => <ul className="mb-3 list-disc pl-5 space-y-1">{children}</ul>,
+            ol: ({ children }) => <ol className="mb-3 list-decimal pl-5 space-y-1">{children}</ol>,
+            li: ({ children }) => <li className="text-[#e0e0e0]">{children}</li>,
+            h1: ({ children }) => <h1 className="text-xl font-bold text-white mb-2">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-lg font-bold text-white mb-2">{children}</h2>,
+            h3: ({ children }) => <h3 className="font-semibold text-white mb-1">{children}</h3>,
             code: ({ children, inline }) =>
               inline
                 ? <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm text-[#9ffe9a] font-mono">{children}</code>
                 : <code className="block">{children}</code>,
-            pre:  ({ children }) => <pre className="mb-3 overflow-x-auto rounded-xl bg-black/40 p-4 border border-white/5">{children}</pre>,
+            pre: ({ children }) => <pre className="mb-3 overflow-x-auto rounded-xl bg-black/40 p-4 border border-white/5">{children}</pre>,
             blockquote: ({ children }) => <blockquote className="border-l-2 border-[#9ffe9a]/40 pl-4 text-[#adaaaa] italic mb-3">{children}</blockquote>,
+            table: ({ children }) => <div className="overflow-x-auto my-3"><table className="w-full border-collapse text-sm">{children}</table></div>,
+            thead: ({ children }) => <thead>{children}</thead>,
+            th: ({ children }) => <th className="border border-white/20 bg-white/10 px-4 py-2 text-left font-semibold text-[#9ffe9a]">{children}</th>,
+            td: ({ children }) => <td className="border border-white/10 px-4 py-2 text-white/80">{children}</td>,
+            tr: ({ children }) => <tr className="even:bg-white/[0.03]">{children}</tr>,
+
           }}
         >
           {content}
@@ -160,11 +167,10 @@ export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeho
                   <button
                     type="button"
                     onClick={() => setProSearch((p) => !p)}
-                    className={`px-3 py-1.5 flex items-center gap-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
-                      proSearch
+                    className={`px-3 py-1.5 flex items-center gap-2 rounded-xl text-xs font-medium transition-all duration-200 border ${proSearch
                         ? 'bg-[#9ffe9a]/15 text-[#9ffe9a] border-[#9ffe9a]/40 shadow-[0_0_12px_rgba(159,254,154,0.15)]'
                         : 'bg-[#262626] text-[#adaaaa] hover:text-white border-white/5 hover:border-white/10'
-                    }`}
+                      }`}
                   >
                     <Icon name={proSearch ? 'stars' : 'public'} fill={proSearch} className="text-sm" />
                     <span className="hidden min-[412px]:inline">Pro Search</span>
