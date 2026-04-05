@@ -36,7 +36,7 @@ const ChatView = () => {
   }
 
   const handleEditMessage = (messageId, newContent) => {
-    handleUpdateMessage(messageId, newContent, chatId)
+    handleUpdateMessage(messageId, newContent, chatId, proSearch)
   }
 
   return (

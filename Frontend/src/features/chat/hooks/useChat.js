@@ -23,28 +23,44 @@ export const useChat = () => {
 
         try {
             const data = await sendMessage({ message, chatId, proSearch })
-            const { chat, aiMessage } = data
+            const { chat, aiMessage, userMessage } = data
 
             if (!chatId) {
+                // FIRST: Create chat entry in Redux
                 dispatch(createNewChat({
                     chatId: chat._id,
                     title: chat.title,
                 }))
+                
+                // SECOND: Add User message with REAL _id
                 dispatch(addNewMessage({
                     chatId: chat._id,
-                    id: `user-${Date.now()}`,
+                    id: userMessage._id,
                     content: message,
                     role: "user",
                 }))
-            }
-            dispatch(addNewMessage({
-                chatId: chat._id,
-                id: aiMessage._id,
-                content: aiMessage.content,
-                role: aiMessage.role,
-            }))
 
-            dispatch(setCurrentChatId(chat._id))
+                // THIRD: Add AI message
+                dispatch(addNewMessage({
+                    chatId: chat._id,
+                    id: aiMessage._id,
+                    content: aiMessage.content,
+                    role: aiMessage.role,
+                }))
+
+                // LAST: Set as current chat
+                dispatch(setCurrentChatId(chat._id))
+            } else {
+                // For existing chats, just add the AI message 
+                // User message was already added as temp- above
+                dispatch(addNewMessage({
+                    chatId: chat._id,
+                    id: aiMessage._id,
+                    content: aiMessage.content,
+                    role: aiMessage.role,
+                }))
+            }
+
             return chat._id
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Something went wrong"))
