@@ -8,6 +8,7 @@ import { MessageBubble, ChatInput, LoadingDots } from '../components'
 const ChatView = () => {
   const { chatId } = useParams()
   const [chatInput, setChatInput] = useState('')
+  const [proSearch, setProSearch] = useState(false)
   const bottomRef = useRef(null)
   const navigate = useNavigate()
 
@@ -31,7 +32,7 @@ const ChatView = () => {
     const msg = chatInput.trim()
     if (!msg || isLoading) return
     setChatInput('')
-    await handleSendMessage({ message: msg, chatId })
+    await handleSendMessage({ message: msg, chatId, proSearch })
   }
 
   const handleEditMessage = (messageId, newContent) => {
@@ -63,6 +64,8 @@ const ChatView = () => {
         onChange={(e) => setChatInput(e.target.value)}
         onSubmit={handleSubmit}
         disabled={isLoading}
+        proSearch={proSearch}
+        onProSearchToggle={() => setProSearch((p) => !p)}
       />
     </div>
   )

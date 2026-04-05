@@ -41,6 +41,7 @@ const WelcomeState = ({ userName, onSuggestionClick }) => (
 // HomeView — shown at /
 const HomeView = () => {
   const [chatInput, setChatInput] = useState('')
+  const [proSearch, setProSearch] = useState(false)
   const { handleSendMessage } = useChat()
   const isLoading = useSelector((state) => state.chat.isLoading)
   const { user } = useSelector((state) => state.auth)
@@ -52,7 +53,7 @@ const HomeView = () => {
     const msg = chatInput.trim()
     if (!msg || isLoading) return
     setChatInput('')
-    const chatId = await handleSendMessage({ message: msg, chatId: null })
+    const chatId = await handleSendMessage({ message: msg, chatId: null, proSearch })
     if (chatId) navigate(`/chat/${chatId}`)
   }
 
@@ -78,6 +79,8 @@ const HomeView = () => {
         onSubmit={handleSubmit}
         disabled={isLoading}
         placeholder="Ask anything to start a new thread..."
+        proSearch={proSearch}
+        onProSearchToggle={() => setProSearch((p) => !p)}
       />
     </div>
   )

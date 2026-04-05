@@ -5,7 +5,7 @@ import messageModel from "../models/message.model.js";
 export async function sendMessage(req, res) {
   
 
-  const { message, content, chat: chatId } = req.body;
+  const { message, content, chat: chatId, proSearch = false } = req.body;
   const finalContent = content || message;
 
   if (!finalContent || typeof finalContent !== "string" || finalContent.trim() === "") {
@@ -51,7 +51,7 @@ export async function sendMessage(req, res) {
 
   const messages = await messageModel.find({ chat: currentChatId });
 
-  const result = await generateResponse(messages);
+  const result = await generateResponse(messages, proSearch);
 
   if (!result) {
     return res.status(500).json({
@@ -109,7 +109,7 @@ export async function getMessages(req, res) {
 export async function updateMessage(req, res) {
   try {
     const { messageId } = req.params;
-    const { content } = req.body;
+    const { content, proSearch = false } = req.body;
 
     if (!content) {
       return res.status(400).json({
@@ -138,7 +138,7 @@ export async function updateMessage(req, res) {
 
     const messages = await messageModel.find({ chat: message.chat })
 
-    const aiText = await generateResponse(messages);
+    const aiText = await generateResponse(messages, proSearch);
 
     const newAIMessage = await messageModel.create({
       chat: message.chat,

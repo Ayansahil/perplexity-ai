@@ -5,8 +5,8 @@ const api = axios.create({
   withCredentials: true,
 });
 
-export const sendMessage = async ({ message: content, chatId }) => {
-  const payload = { content };
+export const sendMessage = async ({ message: content, chatId, proSearch = false }) => {
+  const payload = { content, proSearch };
   if (chatId) payload.chat = chatId;
   const response = await api.post("/api/chats/message", payload);
   return response.data;
@@ -22,8 +22,8 @@ export const getMessages = async (chatId) => {
   return response.data;
 };
 
-export const updateMessage =async (messageId,content)=>{
-const response =await api.patch(`/api/chats/update/${messageId}`,{content})
+export const updateMessage =async (messageId,content, proSearch = false)=>{
+const response =await api.patch(`/api/chats/update/${messageId}`,{content, proSearch})
 return response.data
 }
 

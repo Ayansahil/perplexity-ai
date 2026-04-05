@@ -129,8 +129,7 @@ export const MessageBubble = ({ id, role, content, onEdit }) => {
 }
 
 // ChatInput — shared search bar with Pro Search toggle
-export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeholder = 'Ask anything...' }) => {
-  const [proSearch, setProSearch] = useState(false)
+export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeholder = 'Ask anything...', proSearch = false, onProSearchToggle }) => {
 
   return (
     <div className="absolute bottom-0 left-0 w-full px-8 pb-8 pt-4 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e]/95 to-transparent pointer-events-none">
@@ -167,7 +166,7 @@ export const ChatInput = ({ value, onChange, onSubmit, disabled = false, placeho
                   {/* Pro Search Toggle */}
                   <button
                     type="button"
-                    onClick={() => setProSearch((p) => !p)}
+                    onClick={onProSearchToggle}
                     className={`px-3 py-1.5 flex items-center gap-2 rounded-xl text-xs font-medium transition-all duration-200 border ${proSearch
                         ? 'bg-[#9ffe9a]/15 text-[#9ffe9a] border-[#9ffe9a]/40 shadow-[0_0_12px_rgba(159,254,154,0.15)]'
                         : 'bg-[#262626] text-[#adaaaa] hover:text-white border-white/5 hover:border-white/10'

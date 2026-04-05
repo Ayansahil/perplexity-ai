@@ -25,20 +25,29 @@
 
   const modelWithTools = mistralModel.bindTools([searchInternetTool]);
 
-  export async function generateResponse(messages) {
+  export async function generateResponse(messages, proSearch = false) {
     const formattedMessages = [
-      new SystemMessage(`You are a helpful assistant. If the question needs latest info, use searchInternet tool.`),
+      new SystemMessage(
+        proSearch
+          ? "You are a helpful assistant. If the question needs latest info, use searchInternet tool."
+          : "You are a helpful assistant. Provide answers based on your internal knowledge."
+      ),
       ...messages.map((msg) =>
         msg.role === "user" ? new HumanMessage(msg.content) : new AIMessage(msg.content)
       ),
     ];
+
+    if (!proSearch) {
+      const response = await mistralModel.invoke(formattedMessages);
+      return response.content;
+    }
 
     const response = await modelWithTools.invoke(formattedMessages);
 
     if (response.tool_calls && response.tool_calls.length > 0) {
       const toolCall = response.tool_calls[0];
       const searchResult = await searchInternet(toolCall.args);
-      
+
       const finalResponse = await mistralModel.invoke([
         ...formattedMessages,
         response,

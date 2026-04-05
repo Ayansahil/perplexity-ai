@@ -9,7 +9,7 @@ export const useChat = () => {
     const currentChatId = useSelector((state) => state.chat.currentChatId)
 
     // ── Send Message ──
-    async function handleSendMessage({ message, chatId }) {
+    async function handleSendMessage({ message, chatId, proSearch = false }) {
         dispatch(setLoading(true))
 
         if (chatId) {
@@ -22,7 +22,7 @@ export const useChat = () => {
         }
 
         try {
-            const data = await sendMessage({ message, chatId })
+            const data = await sendMessage({ message, chatId, proSearch })
             const { chat, aiMessage } = data
 
             if (!chatId) {
@@ -112,12 +112,12 @@ export const useChat = () => {
     }
 
     // ── Update Message ──
-    async function handleUpdateMessage(messageId, newContent, chatId) {
+    async function handleUpdateMessage(messageId, newContent, chatId, proSearch = false) {
         const targetChatId = chatId || currentChatId
 
         dispatch(setLoading(true))
         try {
-            await updateMessage(messageId, newContent)
+            await updateMessage(messageId, newContent, proSearch)
             if (!targetChatId) return
             const data = await getMessages(targetChatId)
             dispatch(setMessages({
