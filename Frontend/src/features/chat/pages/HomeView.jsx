@@ -53,8 +53,8 @@ const HomeView = () => {
     const msg = chatInput.trim()
     if (!msg || isLoading) return
     setChatInput('')
-    const chatId = await handleSendMessage({ message: msg, chatId: null, proSearch })
-    if (chatId) navigate(`/chat/${chatId}`)
+    const { chatId: newChatId } = await handleSendMessage({ message: msg, chatId: null, proSearch })
+    if (newChatId) navigate(`/chat/${newChatId}`)
   }
 
   return (
