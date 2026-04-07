@@ -1,8 +1,6 @@
   import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
   import { ChatMistralAI } from "@langchain/mistralai";
   import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages";
-  import { tool } from "@langchain/core/tools";
-  import * as z from "zod";
   import { searchInternet } from "./internet.service.js";
 
   const mistralModel = new ChatMistralAI({
@@ -15,46 +13,41 @@
     apiKey: process.env.GEMINI_API_KEY,
   });
 
-  const searchInternetTool = tool(searchInternet, {
-    name: "searchInternet",
-    description: "Use this tool to get latest information from the internet.",
-    schema: z.object({
-      query: z.string().describe("The search query to look up on the internet."),
-    }),
-  });
-
-  const modelWithTools = mistralModel.bindTools([searchInternetTool]);
-
   export async function generateResponse(messages, proSearch = false) {
-    const formattedMessages = [
-      new SystemMessage(
-        proSearch
-          ? "You are a helpful assistant. If the question needs latest info, use searchInternet tool."
-          : "You are a helpful assistant. Provide answers based on your internal knowledge."
-      ),
-      ...messages.map((msg) =>
-        msg.role === "user" ? new HumanMessage(msg.content) : new AIMessage(msg.content)
-      ),
-    ];
+    const formattedMessages = messages.map((msg) =>
+      msg.role === "user" ? new HumanMessage(msg.content) : new AIMessage(msg.content)
+    );
 
+    // ── Pro Search OFF: use Gemini from internal knowledge ──
     if (!proSearch) {
-      const response = await mistralModel.invoke(formattedMessages);
+      const response = await geminiModel.invoke([
+        new SystemMessage("You are a helpful, knowledgeable assistant. Answer the user's question clearly and thoroughly based on your internal knowledge."),
+        ...formattedMessages,
+      ]);
       return response.content;
     }
 
-    const response = await modelWithTools.invoke(formattedMessages);
+    // ── Pro Search ON: always fetch from Tavily, then answer with Mistral ──
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+    const query = lastUserMessage?.content ?? "latest news";
 
-    if (response.tool_calls && response.tool_calls.length > 0) {
-      const toolCall = response.tool_calls[0];
-      const searchResult = await searchInternet(toolCall.args);
-
-      const finalResponse = await mistralModel.invoke([
-        ...formattedMessages,
-        response,
-        new HumanMessage(`Search results: ${JSON.stringify(searchResult)}\n\nNow answer based on these results.`),
-      ]);
-      return finalResponse.content;
+    let searchResults = "";
+    try {
+      searchResults = await searchInternet({ query });
+    } catch (err) {
+      console.error("Tavily search failed:", err.message);
+      searchResults = "No search results available.";
     }
+
+    const response = await mistralModel.invoke([
+      new SystemMessage(
+        "You are a helpful assistant. The user has enabled Pro Search. " +
+        "Use ONLY the web search results below to answer the question. " +
+        "Cite sources where possible. Do not use your built-in knowledge."
+      ),
+      ...formattedMessages,
+      new HumanMessage(`Web search results:\n${searchResults}\n\nAnswer the user's question based only on these results.`),
+    ]);
 
     return response.content;
   }

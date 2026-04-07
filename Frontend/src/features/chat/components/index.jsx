@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
- 
-import { useSelector } from 'react-redux'
-
-// Global set to track animated messages during the session
-const animatedMessages = new Set()
 
 
 export const Icon = ({ name, fill = false, className = '' }) => (
@@ -39,61 +34,33 @@ export const LoadingDots = () => (
 )
 
 // MessageBubble — user + AI messages
-export const MessageBubble = ({ id, role, content, onEdit }) => {
+export const MessageBubble = ({ id, role, content, isNew = false, onEdit }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(content)
-
-  const isLoading = useSelector((state) => state.chat.isLoading)
-  const [displayedContent, setDisplayedContent] = useState(() => {
-    // If it's an AI message that hasn't been animated yet and we're currently loading (process newly added), start blank
-    if (role === 'ai' && !animatedMessages.has(id) && isLoading) {
-      return ''
-    }
-    return content
-  })
-
+  const [displayedContent, setDisplayedContent] = useState(isNew ? '' : content)
   const timerRef = useRef(null)
-  const isAnimatingRef = useRef(false)
 
   useEffect(() => {
-    // Case 1: Not an AI message or already animated in this session
-    if (role !== 'ai' || animatedMessages.has(id)) {
-      if (!isAnimatingRef.current) {
-        setDisplayedContent(content)
-      }
-      return
-    }
-
-    // Case 2: AI message, not animated, but not loading (historical load)
-    if (!isLoading) {
-      animatedMessages.add(id)
+    // Only animate if the parent explicitly marks this as the newest AI message
+    if (!isNew || role !== 'ai') {
       setDisplayedContent(content)
       return
     }
 
-    // Case 3: New AI message arriving - start typewriter animation
-    animatedMessages.add(id)
-    isAnimatingRef.current = true
+    // Typewriter animation — 15ms per character
+    setDisplayedContent('')
     let index = 0
-    const speed = 15
 
     timerRef.current = setInterval(() => {
-      setDisplayedContent((prev) => {
-        const next = content.slice(0, index + 1)
-        index++
-        if (index >= content.length) {
-          clearInterval(timerRef.current)
-          isAnimatingRef.current = false
-        }
-        return next
-      })
-    }, speed)
+      index++
+      setDisplayedContent(content.slice(0, index))
+      if (index >= content.length) {
+        clearInterval(timerRef.current)
+      }
+    }, 15)
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-    // We only trigger on mount or ID change. isLoading is checked once to decide.
-  }, [id, role, content])
+    return () => clearInterval(timerRef.current)
+  }, [id, isNew, content, role])
 
   const handleSave = () => {
     if (editContent.trim() && editContent.trim() !== content) {
@@ -175,7 +142,6 @@ export const MessageBubble = ({ id, role, content, onEdit }) => {
             th: ({ children }) => <th className="border border-white/20 bg-white/10 px-4 py-2 text-left font-semibold text-[#9ffe9a]">{children}</th>,
             td: ({ children }) => <td className="border border-white/10 px-4 py-2 text-white/80">{children}</td>,
             tr: ({ children }) => <tr className="even:bg-white/[0.03]">{children}</tr>,
-
           }}
         >
           {displayedContent}

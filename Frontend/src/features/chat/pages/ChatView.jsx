@@ -9,6 +9,8 @@ const ChatView = () => {
   const { chatId } = useParams()
   const [chatInput, setChatInput] = useState('')
   const [proSearch, setProSearch] = useState(false)
+  // ID of the most recently received AI message — drives the typewriter animation
+  const [latestAiMessageId, setLatestAiMessageId] = useState(null)
   const bottomRef = useRef(null)
   const navigate = useNavigate()
 
@@ -17,12 +19,13 @@ const ChatView = () => {
   const isLoading = useSelector((state) => state.chat.isLoading)
   const currentMessages = chats[chatId]?.messages ?? []
 
-  // Load messages when chatId changes
+  // When chat changes, clear animation state
   useEffect(() => {
+    setLatestAiMessageId(null)
     if (chatId) handleOpenChat(chatId)
   }, [chatId])
 
-  // Auto-scroll to bottom whenever messages or loading state changes
+  // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [currentMessages.length, isLoading])
@@ -32,10 +35,14 @@ const ChatView = () => {
     const msg = chatInput.trim()
     if (!msg || isLoading) return
     setChatInput('')
-    await handleSendMessage({ message: msg, chatId, proSearch })
+    setLatestAiMessageId(null) // clear old animation
+
+    const { aiMessageId } = await handleSendMessage({ message: msg, chatId, proSearch })
+    if (aiMessageId) setLatestAiMessageId(aiMessageId)
   }
 
   const handleEditMessage = (messageId, newContent) => {
+    setLatestAiMessageId(null)
     handleUpdateMessage(messageId, newContent, chatId, proSearch)
   }
 
@@ -44,15 +51,19 @@ const ChatView = () => {
       {/* Scrollable message list */}
       <div className="flex-1 pb-44 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-[#262626] [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="max-w-4xl mx-auto px-8 py-12 space-y-2">
-          {currentMessages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              id={msg._id || msg.id}
-              role={msg.role}
-              content={msg.content}
-              onEdit={msg.role === 'user' ? handleEditMessage : null}
-            />
-          ))}
+          {currentMessages.map((msg) => {
+            const msgId = msg._id || msg.id
+            return (
+              <MessageBubble
+                key={msgId}
+                id={msgId}
+                role={msg.role}
+                content={msg.content}
+                isNew={msg.role === 'ai' && msgId === latestAiMessageId}
+                onEdit={msg.role === 'user' ? handleEditMessage : null}
+              />
+            )
+          })}
 
           {isLoading && <LoadingDots />}
           <div ref={bottomRef} />

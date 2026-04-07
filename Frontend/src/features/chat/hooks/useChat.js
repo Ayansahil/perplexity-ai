@@ -72,10 +72,11 @@ export const useChat = () => {
                 }
             }
 
-            return finalChatId
+            const newAiMessageId = aiMessage?._id || aiMessage?.id || null
+            return { chatId: finalChatId, aiMessageId: newAiMessageId }
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Something went wrong"))
-            return null
+            return { chatId: null, aiMessageId: null }
         } finally {
             dispatch(setLoading(false))
         }
