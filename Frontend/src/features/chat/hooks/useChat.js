@@ -23,45 +23,56 @@ export const useChat = () => {
 
         try {
             const data = await sendMessage({ message, chatId, proSearch })
+            
+            if (!data || (!data.chat && !data.aiMessage)) {
+                throw new Error("Invalid API response structure")
+            }
+
             const { chat, aiMessage, userMessage } = data
+            const finalChatId = chat?._id || chat?.id || chatId
 
             if (!chatId) {
                 // FIRST: Create chat entry in Redux
                 dispatch(createNewChat({
-                    chatId: chat._id,
-                    title: chat.title,
+                    chatId: finalChatId,
+                    title: chat?.title || "New Chat",
                 }))
                 
                 // SECOND: Add User message with REAL _id
-                dispatch(addNewMessage({
-                    chatId: chat._id,
-                    id: userMessage._id,
-                    content: message,
-                    role: "user",
-                }))
+                if (userMessage) {
+                    dispatch(addNewMessage({
+                        chatId: finalChatId,
+                        id: userMessage._id || userMessage.id,
+                        content: userMessage.content || message,
+                        role: "user",
+                    }))
+                }
 
                 // THIRD: Add AI message
-                dispatch(addNewMessage({
-                    chatId: chat._id,
-                    id: aiMessage._id,
-                    content: aiMessage.content,
-                    role: aiMessage.role,
-                }))
+                if (aiMessage) {
+                    dispatch(addNewMessage({
+                        chatId: finalChatId,
+                        id: aiMessage._id || aiMessage.id,
+                        content: aiMessage.content,
+                        role: aiMessage.role || "ai",
+                    }))
+                }
 
                 // LAST: Set as current chat
-                dispatch(setCurrentChatId(chat._id))
+                dispatch(setCurrentChatId(finalChatId))
             } else {
                 // For existing chats, just add the AI message 
-                // User message was already added as temp- above
-                dispatch(addNewMessage({
-                    chatId: chat._id,
-                    id: aiMessage._id,
-                    content: aiMessage.content,
-                    role: aiMessage.role,
-                }))
+                if (aiMessage) {
+                    dispatch(addNewMessage({
+                        chatId: finalChatId,
+                        id: aiMessage._id || aiMessage.id,
+                        content: aiMessage.content,
+                        role: aiMessage.role || "ai",
+                    }))
+                }
             }
 
-            return chat._id
+            return finalChatId
         } catch (error) {
             dispatch(setError(error?.response?.data?.message ?? "Something went wrong"))
             return null

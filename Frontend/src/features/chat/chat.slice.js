@@ -13,7 +13,7 @@ const chatSlice = createSlice({
             const { chatId, title } = action.payload
             state.chats[chatId] = {
                 id: chatId,
-                title,
+                title: title || "New Chat",
                 messages: [],
                 lastUpdated: new Date().toISOString(),
             }
@@ -21,19 +21,41 @@ const chatSlice = createSlice({
 
         addNewMessage: (state, action) => {
             const { chatId, id, content, role } = action.payload
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    title: "New Chat",
+                    messages: [],
+                    lastUpdated: new Date().toISOString(),
+                }
+            }
             state.chats[chatId].messages.push({ id, content, role })
         },
 
         addMessages: (state, action) => {
             const { chatId, messages } = action.payload
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    title: "New Chat",
+                    messages: [],
+                    lastUpdated: new Date().toISOString(),
+                }
+            }
             state.chats[chatId].messages.push(...messages)
         },
 
         setMessages: (state, action) => {
             const { chatId, messages } = action.payload
-            if (state.chats[chatId]) {
-                state.chats[chatId].messages = messages
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    title: "New Chat",
+                    messages: [],
+                    lastUpdated: new Date().toISOString(),
+                }
             }
+            state.chats[chatId].messages = messages
         },
 
         setChats: (state, action) => {
